@@ -3,15 +3,20 @@ require("dotenv").config();
 
 var fs = require("fs");
 var keys = require("./keys");
+var axios = require("axios");
 var Spotify = require("node-spotify-api");
 var spotify = new Spotify(keys.spotify);
 
 var search = "";
 var searchType = "";
+var searchTermExists = true;
 
 searchType = process.argv[2];
-if (process.argv.length > 2)
-    search = process.argv[3];
+if (process.argv.length > 3)
+    search = process.argv.slice(3).join(" ");
+else
+    searchTermExists = false;
+
 
 //Gets the command from the file
 getCommand(searchType);
@@ -60,7 +65,30 @@ function spotifySearch()
 //Searches For Movies Usings The OMDB API 
 function movieSearch()
 {
-
+    if (searchTermExists)
+    {
+        axios.get("http://www.omdbapi.com/?t=" + search + "&y=&plot=short&apikey=trilogy").then(
+        function(response)
+        {
+            console.log("Title: " + response.data.Title);
+            console.log("Year: " + response.data.Year);
+            console.log("Rating: " + response.data.imdbRating);
+            console.log("RT Rating: " + response.data.Ratings[1].Value);
+            console.log("Country Made: " + response.data.Country);
+            console.log("Language: " + response.data.Language);
+            console.log("Plot: " + response.data.Plot);
+            console.log("Actors: " + response.data.Actors);
+        })
+        .catch(function(error)
+        {
+            console.log(error);
+        });
+    }
+    else
+    {
+        console.log("If you haven't watched 'Mr. Nobody', then you should: http://www.imdb.com/title/tt0485947/");
+        console.log("Its on Netflix!");
+    }
 }
 
 //Reads What To Do From The File
