@@ -1,12 +1,14 @@
 
 require("dotenv").config();
 
+var moment = require("moment");
 var fs = require("fs");
 var keys = require("./keys");
 var axios = require("axios");
 var Spotify = require("node-spotify-api");
 var spotify = new Spotify(keys.spotify);
 
+var log = "";
 var search = "";
 var searchType = "";
 var searchTermExists = true;
@@ -17,7 +19,7 @@ if (process.argv.length > 3)
 else
     searchTermExists = false;
 
-
+var log = "\n" + searchType + " " + search;
 //Gets the command from the file
 getCommand(searchType);
 
@@ -42,12 +44,43 @@ function getCommand(command)
         default:
             console.log("The command, " + command +  ", was not recoginized.");
     }
+
+    //Logs The Search Into A Text File (log.txt)
+    fs.appendFile("log.txt", log, function(error)
+    {
+        if(error)
+            console.log(error);
+        else
+            console.log("Search Logged");
+    })
 }
 
 //Searches For Concerts Using The Bands Town API
 function concertSearch()
 {
+    var apiTime;
 
+    if (searchTermExists)
+    {
+        axios.get("https://rest.bandsintown.com/artists/" + search + "/events?app_id=codingbootcamp").then(
+        function(response)
+        {
+            for (i = 0; i < response.data.length; i++)
+            {
+                console.log(response.data[i].venue.name);
+                console.log(response.data[i].venue.country);
+                console.log(response.data[i].venue.city);
+                apiTime = response.data[i].datetime;
+                console.log(moment(apiTime).format("MM/DD/YYYY") + "\n");
+            }
+        })
+        .catch(function(error)
+        {
+            console.log(error);
+        });
+    }
+    else
+        console.log("There was no band/artist provided to search");
 }
 
 //Searches For The Songs Using The Spotify API
@@ -65,8 +98,10 @@ function spotifySearch()
 //Searches For Movies Usings The OMDB API 
 function movieSearch()
 {
+    //If The User Put In A Search Term
     if (searchTermExists)
     {
+        //Uses Axios To Get Data From The OMDB API
         axios.get("http://www.omdbapi.com/?t=" + search + "&y=&plot=short&apikey=trilogy").then(
         function(response)
         {
@@ -84,6 +119,7 @@ function movieSearch()
             console.log(error);
         });
     }
+    //If There Is No Search Time, Will Recommend Mr. Nobody
     else
     {
         console.log("If you haven't watched 'Mr. Nobody', then you should: http://www.imdb.com/title/tt0485947/");
@@ -102,7 +138,16 @@ function readFrom()
   
         // Then split it by commas (to make it more readable)
         var dataArray = data.split(",");
-        search = dataArray[1];
+
+        //Condtions Depending Of How Many Words Are In The Array
+        if (dataArray.length < 2)
+            console.log("Error: Something Is Wrong With Search In File");
+        else if (dataArray.length === 2)
+            search = dataArray[1];
+        else
+            search = dataArray.slice(1).join(" ");
+
+        //Calls A Command Depending On The First Element Of The Array
         getCommand(dataArray[0]);
     });
 }
