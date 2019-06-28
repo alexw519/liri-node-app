@@ -60,8 +60,10 @@ function concertSearch()
 {
     var apiTime;
 
+    //If The User Provided A Term To Search For
     if (searchTermExists)
     {
+        //Uses Axios To Get Data From Bands In Town API
         axios.get("https://rest.bandsintown.com/artists/" + search + "/events?app_id=codingbootcamp").then(
         function(response)
         {
@@ -74,11 +76,13 @@ function concertSearch()
                 console.log(moment(apiTime).format("MM/DD/YYYY") + "\n");
             }
         })
+        //If There Is An Error, Prints It
         .catch(function(error)
         {
             console.log(error);
         });
     }
+    //If No Terms Are Provided, Lets The User Know
     else
         console.log("There was no band/artist provided to search");
 }
@@ -86,12 +90,18 @@ function concertSearch()
 //Searches For The Songs Using The Spotify API
 function spotifySearch()
 {
-    spotify.search({type: "track", query: search}, function(error, response)
+    if (searchTermExists === false)
+        search = "The Sign Ace Of Base";
+
+    spotify.search({type: "track", query: search, limit: 1}, function(error, response)
     {
         if (error)
             return console.log(error);
 
-        console.log(response.items[0]);
+        console.log("\n" + response.tracks.items[0].artists[0].name);
+        console.log(response.tracks.items[0].name);
+        console.log(response.tracks.items[0].external_urls.spotify);
+        console.log(response.tracks.items[0].album.name + "\n");
     })
 }
 
@@ -141,11 +151,20 @@ function readFrom()
 
         //Condtions Depending Of How Many Words Are In The Array
         if (dataArray.length < 2)
+        {
             console.log("Error: Something Is Wrong With Search In File");
+            searchTermExists = false;
+        }
         else if (dataArray.length === 2)
+        {
             search = dataArray[1];
+            searchTermExists = true;
+        }
         else
+        {
             search = dataArray.slice(1).join(" ");
+            searchTermExists = true;
+        }
 
         //Calls A Command Depending On The First Element Of The Array
         getCommand(dataArray[0]);
