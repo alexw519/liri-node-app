@@ -1,4 +1,5 @@
 
+//Importing The Packages
 require("dotenv").config();
 
 var moment = require("moment");
@@ -8,21 +9,26 @@ var axios = require("axios");
 var Spotify = require("node-spotify-api");
 var spotify = new Spotify(keys.spotify);
 
+//Inialzing Variables
 var log = "";
 var search = "";
 var searchType = "";
+var currentTime = moment().format("dddd, MMMM Do YYYY, h:mm:ss a");
 var searchTermExists = true;
+var maxResults = 5;
 
-searchType = process.argv[2];
+//Getting The User Input
+searchType = process.argv[2].toLowerCase();
 if (process.argv.length > 3)
     search = process.argv.slice(3).join(" ");
 else
     searchTermExists = false;
 
-var log = "\n" + searchType + " " + search;
+//Setting Up String To Put In The Log (Date/Time & Search)
+var log = "\n" + currentTime + ": " + searchType + " " + search;
+
 //Gets the command from the file
 getCommand(searchType);
-
 
 //Calls A Search Function Depending On What The Command Is
 function getCommand(command)
@@ -49,9 +55,7 @@ function getCommand(command)
     fs.appendFile("log.txt", log, function(error)
     {
         if(error)
-            console.log(error);
-        else
-            console.log("Search Logged");
+            return console.log(error);
     })
 }
 
@@ -67,19 +71,30 @@ function concertSearch()
         axios.get("https://rest.bandsintown.com/artists/" + search + "/events?app_id=codingbootcamp").then(
         function(response)
         {
-            for (i = 0; i < response.data.length; i++)
+            console.log("\nSearch Results:");
+            if (maxResults > response.data.length)
+                maxResults = response.data.length;
+
+            //If Condition To Check If The API Found Any Concerts With The Specified Artist
+            if (maxResults != 0)
             {
-                console.log(response.data[i].venue.name);
-                console.log(response.data[i].venue.country);
-                console.log(response.data[i].venue.city);
-                apiTime = response.data[i].datetime;
-                console.log(moment(apiTime).format("MM/DD/YYYY") + "\n");
+                //Prints Out The Information For Up To 5 Venues
+                for (i = 0; i < maxResults; i++)
+                {
+                    console.log(response.data[i].venue.name);
+                    console.log(response.data[i].venue.country);
+                    console.log(response.data[i].venue.city);
+                    apiTime = response.data[i].datetime;
+                    console.log(moment(apiTime).format("MM/DD/YYYY") + "\n");
+                }
             }
+            else
+                console.log("\nSorry, There Are No Venues Playing This Artist Anytime Soon\n");
         })
         //If There Is An Error, Prints It
         .catch(function(error)
         {
-            console.log(error);
+            return console.log(error);
         });
     }
     //If No Terms Are Provided, Lets The User Know
@@ -90,15 +105,19 @@ function concertSearch()
 //Searches For The Songs Using The Spotify API
 function spotifySearch()
 {
+    console.log("\nSearch Results: ");
+
+    //If The User Doesn't Enter A Search Term, It Will Search For The Sign By Ace Of Base
     if (searchTermExists === false)
         search = "The Sign Ace Of Base";
 
-    spotify.search({type: "track", query: search, limit: 1}, function(error, response)
+    //Using The Spotify Package To Get The Track Information From Spotify (Up To 5 Results)
+    spotify.search({type: "track", query: search, limit: 5}, function(error, response)
     {
         if (error)
             return console.log(error);
 
-        console.log("\n" + response.tracks.items[0].artists[0].name);
+        console.log(response.tracks.items[0].artists[0].name);
         console.log(response.tracks.items[0].name);
         console.log(response.tracks.items[0].external_urls.spotify);
         console.log(response.tracks.items[0].album.name + "\n");
@@ -111,6 +130,7 @@ function movieSearch()
     //If The User Put In A Search Term
     if (searchTermExists)
     {
+        console.log("\nSearch Results:");
         //Uses Axios To Get Data From The OMDB API
         axios.get("http://www.omdbapi.com/?t=" + search + "&y=&plot=short&apikey=trilogy").then(
         function(response)
@@ -122,11 +142,11 @@ function movieSearch()
             console.log("Country Made: " + response.data.Country);
             console.log("Language: " + response.data.Language);
             console.log("Plot: " + response.data.Plot);
-            console.log("Actors: " + response.data.Actors);
+            console.log("Actors: " + response.data.Actors + "\n");
         })
         .catch(function(error)
         {
-            console.log(error);
+            return console.log(error);
         });
     }
     //If There Is No Search Time, Will Recommend Mr. Nobody
@@ -146,7 +166,7 @@ function readFrom()
         if (error)
             return console.log(error);
   
-        // Then split it by commas (to make it more readable)
+        // Then split it by commas
         var dataArray = data.split(",");
 
         //Condtions Depending Of How Many Words Are In The Array
@@ -158,11 +178,8 @@ function readFrom()
         else if (dataArray.length === 2)
         {
             search = dataArray[1];
-            searchTermExists = true;
-        }
-        else
-        {
-            search = dataArray.slice(1).join(" ");
+            //Removes The Quotation Marks From The String, Doesn't Work With Bands In Town API
+            search = search.replace(/\"/g, "");
             searchTermExists = true;
         }
 
