@@ -25,7 +25,7 @@ else
     searchTermExists = false;
 
 //Setting Up String To Put In The Log (Date/Time & Search)
-var log = "\n" + currentTime + ": " + searchType + " " + search;
+var log = "";
 
 //Gets the command from the file
 getCommand(searchType);
@@ -33,6 +33,10 @@ getCommand(searchType);
 //Calls A Search Function Depending On What The Command Is
 function getCommand(command)
 {
+    //Logs The Search Into A Text File (log.txt)
+    log = "\n" + currentTime + ": " + searchType + " " + search + "\n";
+    logData(log);
+
     switch (command)
     {
         case "concert-this":
@@ -50,13 +54,6 @@ function getCommand(command)
         default:
             console.log("The command, " + command +  ", was not recoginized.");
     }
-
-    //Logs The Search Into A Text File (log.txt)
-    fs.appendFile("log.txt", log, function(error)
-    {
-        if(error)
-            return console.log(error);
-    })
 }
 
 //Searches For Concerts Using The Bands Town API
@@ -86,15 +83,21 @@ function concertSearch()
                     console.log(response.data[i].venue.city);
                     apiTime = response.data[i].datetime;
                     console.log(moment(apiTime).format("MM/DD/YYYY") + "\n");
+
+                    //Logs The Search Data Into A Text File (log.txt)
+                    logData(response.data[i].venue.name);
+                    logData(response.data[i].venue.country);
+                    logData(response.data[i].venue.city);
+                    logData(moment(apiTime).format("MM/DD/YYYY"));
                 }
             }
             else
-                console.log("\nSorry, There Are No Venues Playing This Artist Anytime Soon\n");
+                console.log("\nSorry, There Are No Venues Playing This Artist Anytime Soon");
         })
         //If There Is An Error, Prints It
         .catch(function(error)
         {
-            return console.log(error);
+            return console.log("Sorry, That Artist Is Not In The Database");
         });
     }
     //If No Terms Are Provided, Lets The User Know
@@ -120,7 +123,13 @@ function spotifySearch()
         console.log(response.tracks.items[0].artists[0].name);
         console.log(response.tracks.items[0].name);
         console.log(response.tracks.items[0].external_urls.spotify);
-        console.log(response.tracks.items[0].album.name + "\n");
+        console.log(response.tracks.items[0].album.name);
+
+        //Logs The Search Data Into A Text File (log.txt)
+        logData(response.tracks.items[0].artists[0].name);
+        logData(response.tracks.items[0].name);
+        logData(response.tracks.items[0].external_urls.spotify);
+        logData(response.tracks.items[0].album.name);
     })
 }
 
@@ -142,7 +151,17 @@ function movieSearch()
             console.log("Country Made: " + response.data.Country);
             console.log("Language: " + response.data.Language);
             console.log("Plot: " + response.data.Plot);
-            console.log("Actors: " + response.data.Actors + "\n");
+            console.log("Actors: " + response.data.Actors);
+
+
+            logData("Title: " + response.data.Title);
+            logData("Year: " + response.data.Year);
+            logData("Rating: " + response.data.imdbRating);
+            logData("RT Rating: " + response.data.Ratings[1].Value);
+            logData("Country Made: " + response.data.Country);
+            logData("Language: " + response.data.Language);
+            logData("Plot: " + response.data.Plot);
+            logData("Actors: " + response.data.Actors);
         })
         .catch(function(error)
         {
@@ -184,6 +203,19 @@ function readFrom()
         }
 
         //Calls A Command Depending On The First Element Of The Array
-        getCommand(dataArray[0]);
+        searchType = dataArray[0];
+        getCommand(searchType);
     });
+}
+
+//Puts Whatever The Argument Is In A Log File (log.txt)
+function logData(data)
+{
+    log = "\n";
+    log += data;
+    fs.appendFile("log.txt", log, function(error)
+    {
+        if(error)
+            return console.log(error);
+    })
 }
