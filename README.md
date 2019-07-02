@@ -12,6 +12,8 @@ The concert-this command pulls infomation from the Bands In Town API, and sends 
   * Name of the venue
   * Venue location
   * Date of the Event (use moment to format this as "MM/DD/YYYY")
+  
+![Concert-This](images/concert-this.gif)
  
 #### spotify-this-song
 The spotify-this-song command pulls information from the Spotify API and sends it the console. 
@@ -20,6 +22,8 @@ The spotify-this-song command pulls information from the Spotify API and sends i
   * A preview link of the song from Spotify
   * The album that the song is from
 If no search term is submitted, it will default to "The Sign" by Ace of Base. 
+
+![Spotify-This-Song](images/spotify-this-song.gif)
 
 #### movie-this
 The movie-this command will get infomation from the OMDB API, and send it to the console.
@@ -33,8 +37,12 @@ The movie-this command will get infomation from the OMDB API, and send it to the
   * Actors in the movie.
 If no movie is provided, it will suggest watch Mr. Nobody
 
+![Movie-This](images/movie-this.gif)
+
 #### do-what-it-says
 The do-what-it-says command reads the random.txt file and gets a command from there
+
+![Do-What-It-Says](images/do-what-it-says.gif)
 
 ## How To Run
 The command to run the app is:
@@ -66,7 +74,8 @@ The last command that you can do is do-what-it-says. This command doesn't need a
 `node liri.js do-what-it-says`
 
 
-# Include screenshots, gifs or videos of the app functioning
+#### Logging Into The Log File
+![Log](images/log.gif)
 
 ## Technologies
 Written in javascript, node.js.
