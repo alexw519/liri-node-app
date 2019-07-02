@@ -77,6 +77,9 @@ The last command that you can do is do-what-it-says. This command doesn't need a
 #### Logging Into The Log File
 ![Log](images/log.gif)
 
+#### Empty Searches
+![Bad Search](images/bad.gif)
+
 ## Technologies
 Written in javascript, node.js.
 Uses moment, axios & spotify packages
